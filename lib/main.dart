@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:newapi_app/pages/detailsPage.dart';
 import 'package:newapi_app/pages/registerPage.dart';
 
 void main() async {
