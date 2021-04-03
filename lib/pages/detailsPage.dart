@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:newapi_app/pages/registerPage.dart';
+import 'package:shimmer/shimmer.dart';
 
 Future<List<Country>> fetchCountry() async {
   final response = await http.get(Uri.https('restcountries.eu', 'rest/v2/all'));
@@ -11,7 +16,6 @@ Future<List<Country>> fetchCountry() async {
     countries = (json.decode(response.body) as List)
         .map((i) => Country.fromJson(i))
         .toList();
-    print(countries);
     return countries;
   } else {
     throw Exception('Failed to load country');
@@ -60,6 +64,18 @@ class _DetailsPageState extends State<DetailsPage> {
     countries = fetchCountry();
   }
 
+  GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+
+  _logout() async {
+    try {
+      _googleSignIn.signOut();
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (BuildContext context) => RegisterPage()));
+    } catch (err) {
+      print(err);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,74 +84,159 @@ class _DetailsPageState extends State<DetailsPage> {
         ),
         body: Container(
             padding: EdgeInsets.all(20.0),
-            child: Column(children: [
-              Text('First Name : ' + widget.fname),
-              SizedBox(
-                height: 10.0,
-              ),
-              Text('Last Name : ' + widget.lname),
-              SizedBox(
-                height: 10.0,
-              ),
-              Text('Mobile : ' + widget.phone),
-              SizedBox(
-                height: 10.0,
-              ),
-              Text('Gender : ' + widget.gender),
-              SizedBox(
-                height: 10.0,
-              ),
-              Text(
-                'Countries Details:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 25.0,
-                ),
-              ),
-              FutureBuilder<List<Country>>(
-                  future: countries,
-                  builder: (context, countrySnap) {
-                    if (countrySnap.connectionState == ConnectionState.none &&
-                        // ignore: unnecessary_null_comparison
-                        countrySnap.hasData == null) {
-                      return CircularProgressIndicator();
-                    }
-                    return SingleChildScrollView(
-                      child: Expanded(
-                        child: SizedBox(
-                          height: 500,
-                          //child: Shimmer.fromColors(
-                          child: ListView.builder(
-                            itemCount: countrySnap.data!.length,
-                            itemBuilder: (context, index) {
-                              return Column(
-                                children: [
-                                  Text('Name : ' +
-                                      countrySnap.data![index].name),
-                                  SizedBox(
-                                    height: 10.0,
+            child: ListView(
+              children: [
+                Column(children: [
+                  Text('First Name : ' + widget.fname),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  Text('Last Name : ' + widget.lname),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  Text('Mobile : ' + widget.phone),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  Text('Gender : ' + widget.gender),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  Text(
+                    'Country Details:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 25.0,
+                    ),
+                  ),
+                  FutureBuilder<List<Country>>(
+                      future: countries,
+                      builder: (context, countrySnap) {
+                        if (countrySnap.hasData) {
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: MediaQuery.of(context).size.height,
+                                  child: new ListView.builder(
+                                    itemCount: countrySnap.data?.length,
+                                    itemBuilder: (context, index) {
+                                      return Column(
+                                        children: [
+                                          Text('Name : ' +
+                                              countrySnap.data![index].name),
+                                          SizedBox(
+                                            height: 10.0,
+                                          ),
+                                          Text('Capital : ' +
+                                              countrySnap.data![index].capital),
+                                          SizedBox(
+                                            height: 10.0,
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              print(countrySnap
+                                                  .data![index].flag);
+                                            },
+                                            child: Text(
+                                              countrySnap.data![index].flag,
+                                            ),
+                                          ),
+                                          SvgPicture.network(countrySnap
+                                              .data![index].flag
+                                              .toString()),
+                                          SizedBox(
+                                            height: 10.0,
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
-                                  Text('Capital : ' +
-                                      countrySnap.data![index].capital),
-                                  SizedBox(
-                                    height: 10.0,
+                                ),
+                              ),
+                              // ignore: deprecated_member_use
+                              FlatButton(
+                                  color: Colors.amber,
+                                  onPressed: () {
+                                    _logout();
+                                  },
+                                  child: Text('Logout')),
+                            ],
+                          );
+                        } else if (countrySnap.hasError) {
+                          return Text("${countrySnap.error}");
+                        }
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height,
+                                child: Shimmer.fromColors(
+                                  // Wrap your widget into Shimmer.
+                                  baseColor: Colors.grey[200]!,
+                                  highlightColor: Colors.grey[350]!,
+                                  child: new ListView.builder(
+                                    itemCount: 10,
+                                    itemBuilder: (context, index) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 8.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            width: 48.0,
+                                            height: 48.0,
+                                            color: Colors.white,
+                                          ),
+                                          const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 8.0,
+                                                  color: Colors.white,
+                                                ),
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 2.0),
+                                                ),
+                                                Container(
+                                                  width: double.infinity,
+                                                  height: 8.0,
+                                                  color: Colors.white,
+                                                ),
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 2.0),
+                                                ),
+                                                Container(
+                                                  width: 40.0,
+                                                  height: 8.0,
+                                                  color: Colors.white,
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                  Text('Flag : ' +
-                                      countrySnap.data![index].flag),
-                                  SizedBox(
-                                    height: 10.0,
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          // baseColor: Colors.amber,
-                          // highlightColor: Colors.orange,
-                        ),
-                      ),
-                      // ),
-                    );
-                  })
-            ])));
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      })
+                ]),
+              ],
+            )));
   }
 }

@@ -31,16 +31,6 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  _logout() async {
-    try {
-      _googleSignIn.signOut();
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (BuildContext context) => RegisterPage()));
-    } catch (err) {
-      print(err);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -52,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       children: [
                         Container(
+                          padding: EdgeInsets.all(20),
                           child: Column(
                             children: [
                               TextFormField(
@@ -123,13 +114,13 @@ class _RegisterPageState extends State<RegisterPage> {
                           height: 30.0,
                         ),
                         // ignore: deprecated_member_use
-                        FlatButton(
-                          color: Colors.amber,
-                          onPressed: () {
-                            _logout();
-                          },
-                          child: Text('Logout'),
-                        )
+                        // FlatButton(
+                        //   color: Colors.amber,
+                        //   onPressed: () {
+                        //     _logout();
+                        //   },
+                        //   child: Text('Logout'),
+                        // )
                       ],
                     ),
                   ),
